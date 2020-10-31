@@ -8,6 +8,7 @@ const addRoutes = require('./routes/add')
 const ordersRoutes = require('./routes/orders')
 const coursesRoutes = require('./routes/courses')
 const User = require('./models/user')
+require('dotenv').config()
 
 const app = express()
 
@@ -46,7 +47,7 @@ const PORT = process.env.PORT || 3000
 
 async function start () {
   try {
-    // const url = ''
+    const url = process.env.MONGODB_URL
     await mongoose.connect(url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
