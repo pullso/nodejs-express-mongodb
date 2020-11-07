@@ -3,6 +3,7 @@ const path = require('path')
 const mongoose = require('mongoose')
 const exphbs = require('express-handlebars')
 const session = require('express-session')
+const MongoStore = require('connect-mongodb-session')(session)
 const homeRoutes = require('./routes/home')
 const cardRoutes = require('./routes/cart')
 const addRoutes = require('./routes/add')
@@ -23,6 +24,11 @@ const hbs = exphbs.create({
   },
 })
 
+const store = new MongoStore({
+  collection: 'sessions',
+  uri: process.env.MONGODB_URI,
+})
+
 app.engine('hbs', hbs.engine)
 app.set('view engine', 'hbs')
 app.set('views', 'views')
@@ -33,18 +39,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'some secret',
   resave: false,
   saveUninitialized: false,
+  store,
 }))
 app.use(varMiddleware)
-
-// app.use(async (req, res, next) => {
-//   try {
-//     const user = await User.findById('5f8c39c13c6ae83f45c27e43')
-//     req.user = user
-//     next()
-//   } catch (e) {
-//     console.log(e)
-//   }
-// })
 
 app.use('/', homeRoutes)
 app.use('/add', addRoutes)
@@ -57,20 +54,12 @@ const PORT = process.env.PORT || 3000
 
 async function start () {
   try {
-    const url = process.env.MONGODB_URL
+    const url = process.env.MONGODB_URI
     await mongoose.connect(url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
-    // const candidate = await User.findOne()
-    // if (!candidate) {
-    //   const user = new User({
-    //     email: 'pavelprobm@gmail.com',
-    //     name: 'Pavel',
-    //     cart: { items: [] },
-    //   })
-    //   await user.save()
-    // }
+    
     app.listen(PORT, () => {
       console.log(`Server is running on port ${ PORT }`)
     })
